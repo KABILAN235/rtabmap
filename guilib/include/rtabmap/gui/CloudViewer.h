@@ -60,6 +60,11 @@ using PCLQVTKWidget = QVTKWidget;
 #include <set>
 
 #include <pcl/PCLPointCloud2.h>
+#include <QDialog>
+#include <QDialogButtonBox>
+#include <QVBoxLayout>
+#include <QPushButton>
+
 
 namespace pcl {
 	namespace visualization {
@@ -68,6 +73,13 @@ namespace pcl {
 }
 
 class QMenu;
+class QDialog;
+class QVBoxLayout;
+class QDialogButtonBox;
+class QPushButton;
+class QString;
+class QObject;
+
 class vtkProp;
 template <typename T> class vtkSmartPointer;
 class vtkOBBTree;
@@ -86,6 +98,8 @@ public:
 
 	void saveSettings(QSettings & settings, const QString & group = "") const;
 	void loadSettings(QSettings & settings, const QString & group = "");
+
+	QColor selectCubeColor();
 
 	void refreshView();
 
@@ -175,7 +189,7 @@ public:
 	// Only one texture per mesh is supported!
 	bool addTextureMesh (
 		   const pcl::TextureMesh &mesh,
-		   const cv::Mat & texture, 
+		   const cv::Mat & texture,
 		   const std::string &id = "texture",
 		   int viewport = 0);
 	bool addOccupancyGridMap(

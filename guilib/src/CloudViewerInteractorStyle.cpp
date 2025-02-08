@@ -12,6 +12,7 @@
 #include "rtabmap/utilite/ULogger.h"
 #include "rtabmap/utilite/UConversion.h"
 #include "rtabmap/utilite/UMath.h"
+#include <rtabmap/core/util3d_transforms.h>
 
 #include <vtkRenderer.h>
 #include <vtkRenderWindow.h>
@@ -30,6 +31,7 @@ CloudViewerInteractorStyle::CloudViewerInteractorStyle() :
 	NumberOfClicks(0),
 	ResetPixelDistance(0),
 	pointsHolder_(new pcl::PointCloud<pcl::PointXYZRGB>),
+	pointsVector_(new std::vector<std::pair<int, int>>()),
 	orthoMode_(false)
 {
 	PreviousPosition[0] = PreviousPosition[1] = 0;
@@ -276,7 +278,13 @@ void CloudViewerInteractorStyle::OnLeftButtonDown()
 				double picked[3];
 				this->Interactor->GetPicker()->GetPickPosition(picked);
 
-				UDEBUG("Shift clicked! Picked value: %f %f %f", picked[0], picked[1], picked[2]);
+				// UDEBUG("Shift clicked! Picked value: %f %f %f", picked[0], picked[1], picked[2]);
+				pointsVector_->push_back(std::make_pair(pickPosition[0], pickPosition[1]));
+				UINFO("Points vector size: %d ---------------------", pointsVector_->size());
+				for(size_t i = 0; i < pointsVector_->size(); ++i)
+				{
+					UINFO("Point %d: (%d, %d)", i, pointsVector_->at(i).first, pointsVector_->at(i).second);
+				}
 
 				float textSize = 0.05;
 
@@ -325,6 +333,31 @@ void CloudViewerInteractorStyle::OnLeftButtonDown()
 				viewer_->addCloud("interactor_points", pointsHolder_);
 				viewer_->setCloudPointSize("interactor_points", 15);
 				viewer_->setCloudOpacity("interactor_points", 0.5);
+			}
+		}else if(this->GetInteractor()->GetAltKey() && viewer_){
+			int result = this->Interactor->GetPicker()->Pick(pickPosition[0], pickPosition[1],
+					0,  // always zero.
+					this->CurrentRenderer);
+			if(result)
+			{
+				double picked[3];
+				this->Interactor->GetPicker()->GetPickPosition(picked);
+
+				pcl::PointXYZRGB pt;
+				pt.r = 255;
+				pt.x = picked[0];
+				pt.y = picked[1];
+				pt.z = picked[2];
+
+				Transform transform(picked[0], picked[1], 0);
+				QColor cubeColor = viewer_->selectCubeColor();
+
+				std::string colorName = (cubeColor == Qt::red) ? "Red" :
+                    (cubeColor == Qt::green) ? "Green" :
+                    (cubeColor == Qt::blue) ? "Blue" :
+                    (cubeColor == Qt::white) ? "White" : "Unknown";
+
+				viewer_->addOrUpdateCube(colorName , transform, 0.1,0.1,0.1, cubeColor);
 			}
 		}
 	}

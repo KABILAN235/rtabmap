@@ -156,30 +156,39 @@ CloudViewer::CloudViewer(QWidget *parent, CloudViewerInteractorStyle * style) :
 	auto renderWindow1 = vtkSmartPointer<vtkGenericOpenGLRenderWindow>::New();
 	renderWindow1->AddRenderer(renderer1);
 	_visualizer = new pcl::visualization::PCLVisualizer(
-		argc, 
-		0, 
+		argc,
+		0,
 		renderer1,
 		renderWindow1,
-		"PCLVisualizer", 
+		"PCLVisualizer",
 		style,
 		false);
 #else
 		_visualizer = new pcl::visualization::PCLVisualizer(
-		argc, 
-		0, 
-		"PCLVisualizer", 
+		argc,
+		0,
+		"PCLVisualizer",
 		style,
 		false);
 #endif
 
 	_visualizer->setShowFPS(false);
-	
+
 	int viewport;
 	// Layer 0: unavailable layer, used as "all" by PCLVisualizer
 	_visualizer->createViewPort (0,0,1.0, 1.0, viewport); // Layer 1: all clouds here
 	_visualizer->createViewPort (0,0,1.0, 1.0, viewport); // Layer 2: all 3d objects here
 	_visualizer->createViewPort (0,0,1.0, 1.0, viewport); // Layer 3: text overlay
 	_visualizer->getRendererCollection()->InitTraversal ();
+	// Register mouse callback to log position
+	_visualizer->registerPointPickingCallback(
+		[](const pcl::visualization::PointPickingEvent &event, void *viewer_void) {
+		// UINFO("You Clicked Point Picker");
+		float x, y, z;
+		event.getPoint(x, y, z);
+		UINFO("Point picked at ( %f, %f, %f )", x, y, z);
+		});
+
 	vtkRenderer* renderer = NULL;
 	int i =0;
 	while ((renderer = _visualizer->getRendererCollection()->GetNextItem ()) != NULL)
@@ -330,7 +339,7 @@ void CloudViewer::createMenu()
 	_aSetIntensityRainbowColormap->setCheckable(true);
 	_aSetIntensityRainbowColormap->setChecked(false);
 	_aSetIntensityMaximum = new QAction("Set maximum absolute intensity...", this);
-	_aSetBackgroundColor = new QAction("Set background color...", this);	
+	_aSetBackgroundColor = new QAction("Set background color...", this);
 	_aSetRenderingRate = new QAction("Set rendering rate...", this);
 	_aSetEDLShading = new QAction("Eye-Dome Lighting Shading", this);
 	_aSetEDLShading->setCheckable(true);
@@ -524,7 +533,7 @@ void CloudViewer::loadSettings(QSettings & settings, const QString & group)
 	this->setCameraLockZ(settings.value("camera_lockZ", this->isCameraLockZ()).toBool());
 
 	this->setDefaultBackgroundColor(settings.value("bg_color", this->getDefaultBackgroundColor()).value<QColor>());
-	
+
 	this->setRenderingRate(settings.value("rendering_rate", this->getRenderingRate()).toDouble());
 
 	if(!group.isEmpty())
@@ -1410,7 +1419,7 @@ bool CloudViewer::addTextureMesh (
   vtkSmartPointer<vtkUnsignedCharArray> colors = vtkSmartPointer<vtkUnsignedCharArray>::New ();
   bool has_color = false;
   vtkSmartPointer<vtkMatrix4x4> transformation = vtkSmartPointer<vtkMatrix4x4>::New ();
-  
+
     pcl::PointCloud<pcl::PointXYZ>::Ptr cloud (new pcl::PointCloud<pcl::PointXYZ> ());
     pcl::fromPCLPointCloud2 (mesh.cloud, *cloud);
     // no points --> exit
@@ -1461,7 +1470,7 @@ bool CloudViewer::addTextureMesh (
   vtkTextureUnitManager* tex_manager = vtkOpenGLRenderWindow::SafeDownCast (_visualizer->getRenderWindow())->GetTextureUnitManager ();
     if (!tex_manager)
       return (false);
- 
+
     vtkSmartPointer<vtkTexture> texture = vtkSmartPointer<vtkTexture>::New ();
     // fill vtkTexture from pcl::TexMaterial structure
 	vtkSmartPointer<vtkImageMatSource> cvImageToVtk = vtkSmartPointer<vtkImageMatSource>::New();
@@ -1928,6 +1937,51 @@ void CloudViewer::removeAllSpheres()
 	}
 	UASSERT(_spheres.empty());
 }
+
+QColor CloudViewer::selectCubeColor(){
+        QDialog dialog;
+        dialog.setWindowTitle("Select a Color");
+        dialog.setFixedSize(300, 200);
+
+        QVBoxLayout layout(&dialog);
+        QDialogButtonBox buttonBox(QDialogButtonBox::NoButton, &dialog);
+
+        QPushButton redButton("Red", &dialog);
+        QPushButton greenButton("Green", &dialog);
+        QPushButton blueButton("Blue", &dialog);
+        QPushButton whiteButton("White", &dialog);
+
+        layout.addWidget(&redButton);
+        layout.addWidget(&greenButton);
+        layout.addWidget(&blueButton);
+        layout.addWidget(&whiteButton);
+        layout.addWidget(&buttonBox);
+
+        QColor selectedColor;
+
+        QObject::connect(&redButton, &QPushButton::clicked, [&]() {
+            selectedColor = QColor(Qt::red);
+            dialog.accept();
+        });
+
+        QObject::connect(&greenButton, &QPushButton::clicked, [&]() {
+            selectedColor = QColor(Qt::green);
+            dialog.accept();
+        });
+
+        QObject::connect(&blueButton, &QPushButton::clicked, [&]() {
+            selectedColor = QColor(Qt::blue);
+            dialog.accept();
+        });
+
+        QObject::connect(&whiteButton, &QPushButton::clicked, [&]() {
+            selectedColor = QColor(Qt::white);
+            dialog.accept();
+        });
+
+        dialog.exec();
+        return selectedColor;
+};
 
 void CloudViewer::addOrUpdateCube(
 			const std::string & id,

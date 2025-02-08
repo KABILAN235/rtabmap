@@ -44,6 +44,7 @@ private:
 	int ResetPixelDistance;
 	float PreviousMeasure[3];
 	pcl::PointCloud<pcl::PointXYZRGB>::Ptr pointsHolder_;
+	std::vector<std::pair<int, int>>* pointsVector_;
 	bool orthoMode_;
 };
 
