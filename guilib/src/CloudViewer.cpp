@@ -362,6 +362,7 @@ void CloudViewer::createMenu()
 	_aPolygonPicking = new QAction("Polygon picking", this);
 	_aPolygonPicking->setCheckable(true);
 	_aPolygonPicking->setChecked(false);
+	_aLookupColorCubes = new QAction("Lookup Cube Coordinates", this);
 
 	QMenu * cameraMenu = new QMenu("Camera", this);
 	cameraMenu->addAction(_aLockCamera);
@@ -419,6 +420,7 @@ void CloudViewer::createMenu()
 	_menu->addAction(_aSetEdgeVisibility);
 	_menu->addAction(_aBackfaceCulling);
 	_menu->addAction(_aPolygonPicking);
+	_menu->addAction(_aLookupColorCubes);
 }
 
 void CloudViewer::saveSettings(QSettings & settings, const QString & group) const
@@ -2004,6 +2006,7 @@ void CloudViewer::addOrUpdateCube(
 	if(!pose.isNull())
 	{
 		_cubes.insert(id);
+		_colorCubes.insert(id,pose);
 
 		QColor c = Qt::gray;
 		if(color.isValid())
@@ -3894,6 +3897,10 @@ void CloudViewer::handleAction(QAction * a)
 		{
 			this->setCoordinateFrameScale(value);
 		}
+	}else if(a==_aLookupColorCubes){
+	    CubeDialog * dialog = new CubeDialog(_colorCubes,this);
+		dialog->exec();
+
 	}
 	else if(a == _aShowFrustum)
 	{

@@ -1,11 +1,12 @@
 
 
 ### Qt Gui stuff ###
-SET(headers_ui 
+SET(headers_ui
 	../include/${PROJECT_PREFIX}/gui/MainWindow.h
 	../include/${PROJECT_PREFIX}/gui/PreferencesDialog.h
 	../include/${PROJECT_PREFIX}/gui/DatabaseViewer.h
 	../include/${PROJECT_PREFIX}/gui/AboutDialog.h
+	../include/${PROJECT_PREFIX}/gui/CubeDialog.h
 	../include/${PROJECT_PREFIX}/gui/ConsoleWidget.h
 	../include/${PROJECT_PREFIX}/gui/ImageView.h
 	../include/${PROJECT_PREFIX}/gui/PdfPlot.h
@@ -39,7 +40,7 @@ SET(headers_ui
 	../include/${PROJECT_PREFIX}/gui/LinkRefiningDialog.h
 )
 
-SET(qrc 
+SET(qrc
     ./GuiLib.qrc
 )
 
@@ -48,7 +49,7 @@ IF(QT4_FOUND OR Qt5_FOUND OR Qt6_FOUND)
 ENDIF()
 
 
-SET(SRC_FILES 
+SET(SRC_FILES
 	./MainWindow.cpp
 	./PreferencesDialog.cpp
 	./KeypointItem.cpp
@@ -57,6 +58,7 @@ SET(SRC_FILES
 	./StatsToolBox.cpp
 	./ProgressDialog.cpp
 	./AboutDialog.cpp
+	./CubeDialog.cpp
 	./ConsoleWidget.cpp
 	./DatabaseViewer.cpp
 	./utilite/UPlot.cpp
@@ -204,11 +206,11 @@ ADD_LIBRARY(rtabmap::gui ALIAS rtabmap_gui)
 generate_export_header(rtabmap_gui
  DEPRECATED_MACRO_NAME RTABMAP_DEPRECATED)
 
-target_include_directories(rtabmap_gui PUBLIC 
+target_include_directories(rtabmap_gui PUBLIC
   "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include;${CMAKE_CURRENT_BINARY_DIR}/include;${PUBLIC_INCLUDE_DIRS}>"
   "$<INSTALL_INTERFACE:${INSTALL_INCLUDE_DIR};${PUBLIC_INCLUDE_DIRS}>")
 
-TARGET_LINK_LIBRARIES(rtabmap_gui 
+TARGET_LINK_LIBRARIES(rtabmap_gui
   PUBLIC
     rtabmap_core ${PUBLIC_LIBRARIES}
   PRIVATE
@@ -235,7 +237,7 @@ configure_file(
   ${CMAKE_CURRENT_BINARY_DIR}/rtabmap_gui_export.h
   ${CMAKE_CURRENT_BINARY_DIR}/include/${PROJECT_PREFIX}/gui/rtabmap_gui_export.h
   COPYONLY)
-  
+
 install(
   DIRECTORY
     ${CMAKE_CURRENT_SOURCE_DIR}/../include/${PROJECT_PREFIX}

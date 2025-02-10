@@ -33,6 +33,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "rtabmap/core/Transform.h"
 #include "rtabmap/core/StereoCameraModel.h"
 #include "rtabmap/gui/CloudViewerInteractorStyle.h"
+#include "rtabmap/gui/CubeDialog.h"
 #include <vtkVersionMacros.h>
 
 #if VTK_MAJOR_VERSION > 8
@@ -475,6 +476,7 @@ private:
     QAction * _aSetEdgeVisibility;
     QAction * _aBackfaceCulling;
     QAction * _aPolygonPicking;
+    QAction * _aLookupColorCubes;
     QMenu * _menu;
     std::set<std::string> _graphes;
     std::set<std::string> _coordinates;
@@ -482,6 +484,7 @@ private:
     std::set<std::string> _lines;
     std::set<std::string> _spheres;
     std::set<std::string> _cubes;
+    QMap<std::string, Transform> _colorCubes;
     std::set<std::string> _quads;
     QMap<std::string, Transform> _frustums;
     pcl::PointCloud<pcl::PointXYZ>::Ptr _trajectory;
